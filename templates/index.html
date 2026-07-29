@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Signal — Real-Time Sentiment Analyzer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<div class="grain"></div>
+
+<header class="site-header">
+  <div class="wrap header-inner">
+    <span class="wordmark">SIGNAL</span>
+    <span class="eyebrow">Real-time sentiment analysis · VADER + NLTK · Flask API</span>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="hero">
+    <h1>Read the tone<br>before you read the room.</h1>
+    <p class="hero-sub">Type or paste any sentence below. Every keystroke is broken down by a lexicon-and-rules
+      engine trained to hear negation, emphasis and punctuation the way a person would — then scored
+      Positive, Negative or Neutral in real time.</p>
+  </section>
+
+  <section class="console">
+    <div class="console-input">
+      <label for="text-input" class="field-label">Input text</label>
+      <textarea id="text-input" placeholder="e.g. &quot;The onboarding was confusing at first, but support fixed it fast — genuinely impressed.&quot;" maxlength="5000"></textarea>
+      <div class="input-row">
+        <span class="char-count"><span id="char-count">0</span> / 5000</span>
+        <div class="input-actions">
+          <button id="sample-btn" class="btn btn-ghost" type="button">Try a sample</button>
+          <button id="analyze-btn" class="btn btn-primary" type="button">Analyze text</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="result" class="console-result is-empty">
+      <div class="result-empty">
+        <span class="scan-dot"></span>
+        Awaiting input — results will render here.
+      </div>
+    </div>
+  </section>
+
+  <section class="meter-section" id="meter-section" style="display:none;">
+    <h2 class="section-label">Polarity spectrum</h2>
+    <div class="spectrum">
+      <div class="spectrum-track">
+        <div class="spectrum-zone zone-neg"></div>
+        <div class="spectrum-zone zone-neu"></div>
+        <div class="spectrum-zone zone-pos"></div>
+        <div class="spectrum-needle" id="spectrum-needle"></div>
+      </div>
+      <div class="spectrum-labels">
+        <span>−1.0 Negative</span>
+        <span>0 Neutral</span>
+        <span>+1.0 Positive</span>
+      </div>
+    </div>
+
+    <div class="score-bars">
+      <div class="score-bar-row">
+        <span class="score-bar-label">Positive</span>
+        <div class="score-bar-track"><div class="score-bar-fill fill-pos" id="bar-pos"></div></div>
+        <span class="score-bar-val" id="val-pos">0.00</span>
+      </div>
+      <div class="score-bar-row">
+        <span class="score-bar-label">Neutral</span>
+        <div class="score-bar-track"><div class="score-bar-fill fill-neu" id="bar-neu"></div></div>
+        <span class="score-bar-val" id="val-neu">0.00</span>
+      </div>
+      <div class="score-bar-row">
+        <span class="score-bar-label">Negative</span>
+        <div class="score-bar-track"><div class="score-bar-fill fill-neg" id="bar-neg"></div></div>
+        <span class="score-bar-val" id="val-neg">0.00</span>
+      </div>
+    </div>
+
+    <div class="keywords-block">
+      <h3 class="section-label">Keywords after stopword removal</h3>
+      <div id="keywords" class="keyword-list"></div>
+    </div>
+  </section>
+
+  <section class="pipeline">
+    <h2 class="section-label">How this works</h2>
+    <div class="pipeline-grid">
+      <div class="pipeline-step">
+        <span class="step-index">Clean</span>
+        <p>Strip URLs, HTML and stray whitespace while preserving case and punctuation — VADER reads
+          <code>"GREAT!!"</code> as more intense than <code>"great"</code>.</p>
+      </div>
+      <div class="pipeline-step">
+        <span class="step-index">Tokenize</span>
+        <p>NLTK's <code>word_tokenize</code> splits the input into words and punctuation tokens for
+          downstream analysis.</p>
+      </div>
+      <div class="pipeline-step">
+        <span class="step-index">Filter</span>
+        <p>Stopwords (<code>the</code>, <code>is</code>, <code>and</code> …) are removed to surface the
+          keywords actually carrying meaning.</p>
+      </div>
+      <div class="pipeline-step">
+        <span class="step-index">Score</span>
+        <p>VADER's lexicon + rule-based model returns compound, positive, neutral and negative scores,
+          thresholded into a final label.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="api-block">
+    <h2 class="section-label">REST API</h2>
+    <div class="api-card">
+      <div class="api-line"><span class="verb verb-post">POST</span><code>/api/analyze</code></div>
+      <pre class="code-block">curl -X POST https://your-deployed-url/api/analyze \
+  -H "Content-Type: application/json" \
+  -d '{"text": "I absolutely loved this!"}'</pre>
+      <pre class="code-block">{
+  "sentiment": "Positive",
+  "scores": {"positive": 0.643, "neutral": 0.357, "negative": 0.0, "compound": 0.6696},
+  "keywords": ["absolutely", "loved"]
+}</pre>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">Built with Flask · NLTK · VADER — deploy-ready REST API and frontend.</div>
+</footer>
+
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
